@@ -1,32 +1,94 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+      <base-spinner />
+      <layout-notification />
+      <!--<h1>Oi</h1>
+      <button @click="mostrarSpinner()">
+        Mostrar Spinner
+      </button>-->
+
+      <div class="container-fluid" v-if="isLogged">
+        <div class="row">
+          <div class="col-2 navigation-sidebar">
+            <h1 class="app-title">Expenses</h1>
+            <layout-navigation />
+          </div>
+          <div class="col">
+            <router-view />
+          </div>
+        </div>
+      </div>
+
+      <router-view v-else />
   </div>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
+import BaseSpinner from './components/global/BaseSpinner'
+import LayoutNavigation from './components/layout/LayoutNavigation'
+import LayoutNotification from './components/layout/LayoutNotification'
 
-#nav {
-  padding: 30px;
+export default {
+  components: {
+    BaseSpinner,
+    LayoutNavigation,
+    LayoutNotification
+  },
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
+  data: () => ({
+    isLogged: false
+  }),
 
-    &.router-link-exact-active {
-      color: #42b983;
+  mounted () {
+    this.$firebase.auth().onAuthStateChanged( user => {
+      //operacao ternaria. se user for verdadeiro recebe valor, se nao vira nullo
+      window.uid = user ? user.uid : null
+
+      //DEPOIS ESTUDAR ISTO AQUI!!!!!
+      this.isLogged = !!user
+
+      if (window.uid) {
+        this.$router.push({name: 'home'})
+      } else {
+        this.$router.push({name: 'login'})
+      }
+
+      //VERIFICAR PQ O SETTIMEOUT NAO FUNCIONOU
+      //setTimeout(() => {
+        //this.$root.$emit('Spiner::hide')
+      //})
+      this.$root.$emit('Spinner::hide')
+
+    })
+  },
+
+  methods: {
+    mostrarSpinner() {
+      this.$root.$emit('Spinner::show')
     }
   }
+
+  //mounted () {
+  //  console.log(this.$firebase)
+  //}
+
+}
+</script>
+
+<style lang="scss">
+#app {
+  height: 100vh;
+  color: var(--light);
+  background-color: var(--darker);
+}
+
+.navigation-sidebar {
+  background-color: var(--dark-medium);
+}
+
+.app-title {
+  font-size: 20pt;
+  margin-top: 10px;
+  text-align: center;
 }
 </style>
